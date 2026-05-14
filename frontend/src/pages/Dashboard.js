@@ -7,8 +7,8 @@ function Dashboard({ darkMode, setDarkMode }) {
   const [jobs, setJobs] = useState([]);
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [search] = useState("");
+  const [filterStatus] = useState("All");
 
   const stats = {
     total: jobs.length,
