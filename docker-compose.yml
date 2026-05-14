@@ -5,45 +5,78 @@ services:
   postgres:
     image: postgres:15
     container_name: jobtracker-postgres
+
     restart: always
+
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: jobtracker
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   job-service:
     build: ./job-service
+
     container_name: job-service
+
+    restart: always
+
     ports:
       - "8000:8000"
+
     depends_on:
       - postgres
+
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/jobtracker
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
 
   auth-service:
     build: ./auth-service
+
     container_name: auth-service
+
+    restart: always
+
     ports:
       - "8080:8080"
+
     depends_on:
       - postgres
+
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/jobtracker
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET}
 
   frontend:
     build: ./frontend
-    container_name: frontend
-    platform: linux/amd64 
-    ports:
 
+    container_name: frontend
+
+    restart: always
+
+    platform: linux/amd64
+
+    ports:
       - "3000:80"
+
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+
+      REACT_APP_AUTH_URL: ${REACT_APP_AUTH_URL}
+
+    depends_on:
+      - job-service
+      - auth-service
 
 volumes:
   postgres_data:

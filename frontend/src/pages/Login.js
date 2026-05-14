@@ -31,15 +31,33 @@ function Login() {
 
   const handleSubmit = async () => {
 
-    if (
-      isSignup &&
-      formData.password !== formData.confirmPassword
-    ) {
+    if (!formData.email || !formData.password) {
 
-      toast.error("Passwords do not match");
+  toast.error("Please fill all fields");
 
-      return;
-    }
+  return;
+}
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailRegex.test(formData.email)) {
+
+  toast.error("Invalid email format");
+
+  return;
+}
+
+if (
+  isSignup &&
+  formData.password.length < 6
+) {
+
+  toast.error(
+    "Password must be at least 6 characters"
+  );
+
+  return;
+}
 
     try {
 
@@ -48,7 +66,7 @@ function Login() {
       if (isSignup) {
 
         await API.post(
-  "http://localhost:8080/auth/register",
+  `${process.env.REACT_APP_AUTH_URL}/auth/register`,
    {
           name: formData.name,
           email: formData.email,
@@ -62,7 +80,7 @@ function Login() {
       } else {
 
         const res = await API.post(
-  "http://localhost:8080/auth/login",
+  `${process.env.REACT_APP_AUTH_URL}/auth/login`,
           {
             email: formData.email,
             password: formData.password
