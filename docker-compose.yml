@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: jobtracker-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: jobtracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  job-service:
+    build: ./job-service
+    container_name: job-service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/jobtracker
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/jobtracker
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    platform: linux/amd64 
+    ports:
+
+      - "3000:80"
+
+volumes:
+  postgres_data:
